@@ -145,6 +145,7 @@ class HouseCostApp:
         self.monthly_payment_var = tk.StringVar(value="$0.00")
         self.total_interest_var = tk.StringVar(value="$0.00")
         self.total_cost_var = tk.StringVar(value="$0.00")
+        self.closing_costs_var = tk.StringVar(value="(Closing Costs: $0 - $0)")
         self.total_payments_var = tk.StringVar(value="0")
 
         ttk.Label(results_frame, text="Estimated Monthly Payment:").grid(row=0, column=0, sticky=tk.W, pady=5)
@@ -154,7 +155,12 @@ class HouseCostApp:
         ttk.Label(results_frame, textvariable=self.total_interest_var, font=('Helvetica', 11)).grid(row=1, column=1, sticky=tk.E, pady=5)
 
         ttk.Label(results_frame, text="Total Cost Over Loan:").grid(row=2, column=0, sticky=tk.W, pady=5)
-        ttk.Label(results_frame, textvariable=self.total_cost_var, font=('Helvetica', 11, 'bold')).grid(row=2, column=1, sticky=tk.E, pady=5)
+        
+        cost_display_frame = ttk.Frame(results_frame)
+        cost_display_frame.grid(row=2, column=1, sticky=tk.E, pady=5)
+        
+        ttk.Label(cost_display_frame, textvariable=self.total_cost_var, font=('Helvetica', 11, 'bold')).grid(row=0, column=0, sticky=tk.E)
+        ttk.Label(cost_display_frame, textvariable=self.closing_costs_var, font=('Helvetica', 9), foreground="gray").grid(row=1, column=0, sticky=tk.E)
 
         ttk.Label(results_frame, text="Months to Pay Off:").grid(row=3, column=0, sticky=tk.W, pady=5)
         ttk.Label(results_frame, textvariable=self.total_payments_var, font=('Helvetica', 11)).grid(row=3, column=1, sticky=tk.E, pady=5)
@@ -288,9 +294,13 @@ class HouseCostApp:
             # Total cost calculation
             total_cost = float(price) + float(total_interest_paid) + (float(hoa) + float(monthly_tax)) * int(months_count)
 
+            closing_min = price * 0.02
+            closing_max = price * 0.05
+
             self.monthly_payment_var.set(f"${total_monthly_payment:,.2f}")
             self.total_interest_var.set(f"${total_interest_paid:,.2f}")
             self.total_cost_var.set(f"${total_cost:,.2f}")
+            self.closing_costs_var.set(f"(Closing Costs: ${closing_min:,.0f} - ${closing_max:,.0f})")
             self.total_payments_var.set(f"{months_count}")
             
         except Exception:

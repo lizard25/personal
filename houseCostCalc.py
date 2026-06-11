@@ -9,10 +9,11 @@
 # all houses will be listed tabulary with all exiting fields as different columns and each house as a different row
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 import json
 import os
 import webbrowser
+import csv
 
 class HouseCostApp:
     def __init__(self, root):
@@ -47,7 +48,15 @@ class HouseCostApp:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
-        main_frame = ttk.Frame(self.root, padding="15")
+        # Notebook with Calculator and Amortization tabs
+        notebook = ttk.Notebook(self.root)
+        notebook.grid(row=0, column=0, sticky="nsew")
+        tab_calc = ttk.Frame(notebook)
+        tab_amort = ttk.Frame(notebook)
+        notebook.add(tab_calc, text="Calculator")
+        notebook.add(tab_amort, text="Amortization")
+
+        main_frame = ttk.Frame(tab_calc, padding="15")
         main_frame.grid(row=0, column=0, sticky="nsew")
         main_frame.columnconfigure(0, weight=1)
         main_frame.columnconfigure(1, weight=1)
@@ -103,6 +112,37 @@ class HouseCostApp:
         self.notes_text = tk.Text(input_frame, width=35, height=5)
         self.notes_text.grid(row=8, column=1, columnspan=2, sticky=tk.W, pady=5)
 
+        # Additional cost inputs: Insurance, Maintenance, Utilities, PMI
+        ttk.Label(input_frame, text="Homeowners Insurance (Annual $):").grid(row=9, column=0, sticky=tk.W, pady=5)
+        self.insurance_var = tk.DoubleVar(value=1200)
+        ttk.Entry(input_frame, textvariable=self.insurance_var).grid(row=9, column=1, sticky=tk.W, pady=5)
+
+        ttk.Label(input_frame, text="Maintenance (Annual $):").grid(row=10, column=0, sticky=tk.W, pady=5)
+        self.maintenance_var = tk.DoubleVar(value=1200)
+        ttk.Entry(input_frame, textvariable=self.maintenance_var).grid(row=10, column=1, sticky=tk.W, pady=5)
+
+        ttk.Label(input_frame, text="Utilities (Annual $):").grid(row=11, column=0, sticky=tk.W, pady=5)
+        self.utilities_var = tk.DoubleVar(value=2400)
+        ttk.Entry(input_frame, textvariable=self.utilities_var).grid(row=11, column=1, sticky=tk.W, pady=5)
+
+        # PMI inputs
+        ttk.Label(input_frame, text="Include PMI:").grid(row=12, column=0, sticky=tk.W, pady=5)
+        self.pmi_enabled_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(input_frame, variable=self.pmi_enabled_var).grid(row=12, column=1, sticky=tk.W, pady=5)
+
+        ttk.Label(input_frame, text="PMI Rate (annual % of loan):").grid(row=13, column=0, sticky=tk.W, pady=5)
+        self.pmi_rate_var = tk.DoubleVar(value=0.5)
+        ttk.Entry(input_frame, textvariable=self.pmi_rate_var).grid(row=13, column=1, sticky=tk.W, pady=5)
+
+        # Affordability inputs
+        ttk.Label(input_frame, text="Gross Monthly Income ($):").grid(row=14, column=0, sticky=tk.W, pady=5)
+        self.income_var = tk.DoubleVar(value=6000)
+        ttk.Entry(input_frame, textvariable=self.income_var).grid(row=14, column=1, sticky=tk.W, pady=5)
+
+        ttk.Label(input_frame, text="Other Monthly Debts ($):").grid(row=15, column=0, sticky=tk.W, pady=5)
+        self.other_debts_var = tk.DoubleVar(value=0)
+        ttk.Entry(input_frame, textvariable=self.other_debts_var).grid(row=15, column=1, sticky=tk.W, pady=5)
+
         # --- Interactive Section ---
         right_frame = ttk.Frame(main_frame)
         right_frame.grid(row=0, column=1, sticky="nsew")
@@ -147,6 +187,7 @@ class HouseCostApp:
         self.total_cost_var = tk.StringVar(value="$0.00")
         self.closing_costs_var = tk.StringVar(value="(Closing Costs: $0 - $0)")
         self.total_payments_var = tk.StringVar(value="0")
+        self.dti_var = tk.StringVar(value="DTI: 0%")
 
         ttk.Label(results_frame, text="Estimated Monthly Payment:").grid(row=0, column=0, sticky=tk.W, pady=5)
         ttk.Label(results_frame, textvariable=self.monthly_payment_var, font=('Helvetica', 14, 'bold'), foreground="blue").grid(row=0, column=1, sticky=tk.E, pady=5)
@@ -165,12 +206,16 @@ class HouseCostApp:
         ttk.Label(results_frame, text="Months to Pay Off:").grid(row=3, column=0, sticky=tk.W, pady=5)
         ttk.Label(results_frame, textvariable=self.total_payments_var, font=('Helvetica', 11)).grid(row=3, column=1, sticky=tk.E, pady=5)
 
+        ttk.Label(results_frame, text="Affordability:").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(results_frame, textvariable=self.dti_var, font=('Helvetica', 11)).grid(row=4, column=1, sticky=tk.E, pady=5)
+
         # Buttons
         button_frame = ttk.Frame(right_frame)
         button_frame.grid(row=2, column=0, pady=20)
         
         ttk.Button(button_frame, text="Save Current House", command=self.add_house).grid(row=0, column=0, padx=10)
         ttk.Button(button_frame, text="Clear Fields", command=self.clear_fields).grid(row=0, column=1, padx=10)
+        ttk.Button(button_frame, text="Show Amortization", command=lambda: notebook.select(tab_amort)).grid(row=0, column=2, padx=10)
 
         # --- Table Section ---
         table_frame = ttk.LabelFrame(main_frame, text="House Comparisons", padding="15")
@@ -201,6 +246,30 @@ class HouseCostApp:
         self.context_menu.add_command(label="Open Link", command=self.open_link)
 
         self.refresh_table()
+
+        # --- Amortization Tab UI ---
+        amort_frame = ttk.Frame(tab_amort, padding="10")
+        amort_frame.grid(row=0, column=0, sticky="nsew")
+        amort_frame.columnconfigure(0, weight=1)
+
+        amort_cols = ("Month", "Payment", "Principal", "Interest", "Extra", "Balance")
+        self.amort_tree = ttk.Treeview(amort_frame, columns=amort_cols, show="headings", height=20)
+        for c in amort_cols:
+            self.amort_tree.heading(c, text=c)
+            self.amort_tree.column(c, width=100, anchor=tk.E)
+        self.amort_tree.column("Month", width=60, anchor=tk.CENTER)
+        self.amort_tree.grid(row=0, column=0, sticky="nsew")
+        amort_scroll = ttk.Scrollbar(amort_frame, orient=tk.VERTICAL, command=self.amort_tree.yview)
+        self.amort_tree.configure(yscrollcommand=amort_scroll.set)
+        amort_scroll.grid(row=0, column=1, sticky="ns")
+
+        amort_btn_frame = ttk.Frame(amort_frame)
+        amort_btn_frame.grid(row=1, column=0, sticky="e", pady=8)
+        ttk.Button(amort_btn_frame, text="Export CSV", command=self.export_amortization_csv).grid(row=0, column=0, padx=6)
+        ttk.Button(amort_btn_frame, text="Back to Calculator", command=lambda: notebook.select(tab_calc)).grid(row=0, column=1, padx=6)
+
+        # initial amortization populate
+        self.refresh_amortization()
 
         self.price_var.trace_add("write", self.on_price_change)
         self.down_payment_pct_var.trace_add("write", self.on_pct_change)
@@ -264,8 +333,23 @@ class HouseCostApp:
                 monthly_pi = loan_amount / total_months if total_months > 0 else 0
 
             monthly_tax = (price * tax_rate) / 12
-            # Monthly PITI + HOA (Principal, Interest, Tax, Insurance - Insurance omitted unless specified, HOA added)
-            total_monthly_payment = monthly_pi + hoa + monthly_tax
+
+            # Monthly extras: insurance, maintenance, utilities
+            monthly_insurance = float(self.insurance_var.get()) / 12.0
+            monthly_maintenance = float(self.maintenance_var.get()) / 12.0
+            monthly_utilities = float(self.utilities_var.get()) / 12.0
+
+            # PMI (if enabled and down payment < 20%) - annual percent of loan amount
+            pmi_monthly = 0.0
+            try:
+                if self.pmi_enabled_var.get() and (self.down_payment_pct_var.get() < 20):
+                    pmi_rate = float(self.pmi_rate_var.get()) / 100.0
+                    pmi_monthly = (loan_amount * pmi_rate) / 12.0
+            except Exception:
+                pmi_monthly = 0.0
+
+            # Total monthly payment includes P&I + HOA + tax + insurance + maintenance + utilities + PMI
+            total_monthly_payment = monthly_pi + hoa + monthly_tax + monthly_insurance + monthly_maintenance + monthly_utilities + pmi_monthly
 
             # Amortization simulation for extra principal
             balance = loan_amount
@@ -291,20 +375,98 @@ class HouseCostApp:
                 months_count = 0
                 total_interest_paid = 0.0
 
-            # Total cost calculation
-            total_cost = float(price) + float(total_interest_paid) + (float(hoa) + float(monthly_tax)) * int(months_count)
+            # Total cost calculation (include monthly extras over duration)
+            monthly_extras = hoa + monthly_tax + monthly_insurance + monthly_maintenance + monthly_utilities + pmi_monthly
+            total_cost = float(price) + float(total_interest_paid) + (monthly_extras) * int(months_count)
 
             closing_min = price * 0.02
             closing_max = price * 0.05
+
+            # Affordability - DTI
+            income = float(self.income_var.get()) if hasattr(self, 'income_var') else 1
+            other_debts = float(self.other_debts_var.get()) if hasattr(self, 'other_debts_var') else 0
+            dti_pct = 0.0
+            try:
+                if income > 0:
+                    dti_pct = ((total_monthly_payment + other_debts) / income) * 100.0
+            except Exception:
+                dti_pct = 0.0
 
             self.monthly_payment_var.set(f"${total_monthly_payment:,.2f}")
             self.total_interest_var.set(f"${total_interest_paid:,.2f}")
             self.total_cost_var.set(f"${total_cost:,.2f}")
             self.closing_costs_var.set(f"(Closing Costs: ${closing_min:,.0f} - ${closing_max:,.0f})")
             self.total_payments_var.set(f"{months_count}")
+            self.dti_var.set(f"DTI: {dti_pct:.1f}%")
+            # keep amortization view in sync
+            self.refresh_amortization()
             
         except Exception:
             pass
+
+    def generate_amortization_schedule(self):
+        # returns list of rows: (month, payment, principal, interest, extra, balance)
+        rows = []
+        try:
+            price = float(self.price_var.get())
+            down_amt = float(self.down_payment_amt_var.get())
+            annual_interest = float(self.interest_rate_var.get()) / 100
+            years = int(self.duration_var.get())
+            extra = float(self.extra_principal_var.get())
+
+            loan = price - down_amt
+            monthly_interest = annual_interest / 12
+            total_months = years * 12
+
+            if monthly_interest > 0:
+                monthly_pi = loan * (monthly_interest * (1 + monthly_interest) ** total_months) / ((1 + monthly_interest) ** total_months - 1)
+            else:
+                monthly_pi = loan / total_months if total_months > 0 else 0
+
+            balance = loan
+            month = 0
+            while balance > 0.01 and month < 600:
+                month += 1
+                interest = balance * monthly_interest
+                principal = monthly_pi - interest
+                total_principal = principal + extra
+                if total_principal > balance:
+                    total_principal = balance
+                balance -= total_principal
+                payment = principal + interest
+                rows.append((month, round(payment + extra, 2), round(total_principal, 2), round(interest, 2), round(extra, 2), round(balance, 2)))
+        except Exception:
+            pass
+        return rows
+
+    def refresh_amortization(self):
+        # repopulate amortization tree
+        try:
+            for item in self.amort_tree.get_children():
+                self.amort_tree.delete(item)
+            rows = self.generate_amortization_schedule()
+            for r in rows:
+                self.amort_tree.insert("", tk.END, values=r)
+        except Exception:
+            pass
+
+    def export_amortization_csv(self):
+        rows = self.generate_amortization_schedule()
+        if not rows:
+            messagebox.showinfo("No Data", "No amortization data to export.")
+            return
+        path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+        if not path:
+            return
+        try:
+            with open(path, "w", newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["Month", "Payment", "Principal", "Interest", "Extra", "Balance"])
+                for r in rows:
+                    writer.writerow(r)
+            messagebox.showinfo("Exported", f"Amortization exported to {path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not export CSV: {e}")
 
     def add_house(self):
         address = self.address_var.get().strip()
@@ -333,6 +495,13 @@ class HouseCostApp:
                     "down_payment_pct": self.down_payment_pct_var.get(),
                     "down_payment_amt": self.down_payment_amt_var.get(),
                     "link": self.link_var.get(),
+                    "insurance": self.insurance_var.get(),
+                    "maintenance": self.maintenance_var.get(),
+                    "utilities": self.utilities_var.get(),
+                    "pmi_enabled": self.pmi_enabled_var.get(),
+                    "pmi_rate": self.pmi_rate_var.get(),
+                    "income": self.income_var.get(),
+                    "other_debts": self.other_debts_var.get(),
                     "notes": self.notes_text.get("1.0", tk.END).strip()
                 }
             }
@@ -415,6 +584,13 @@ class HouseCostApp:
             self.down_payment_pct_var.set(raw.get("down_payment_pct", 20))
             self.down_payment_amt_var.set(raw.get("down_payment_amt", 60000))
             self.link_var.set(raw.get("link", ""))
+            self.insurance_var.set(raw.get("insurance", 1200))
+            self.maintenance_var.set(raw.get("maintenance", 1200))
+            self.utilities_var.set(raw.get("utilities", 2400))
+            self.pmi_enabled_var.set(raw.get("pmi_enabled", False))
+            self.pmi_rate_var.set(raw.get("pmi_rate", 0.5))
+            self.income_var.set(raw.get("income", 6000))
+            self.other_debts_var.set(raw.get("other_debts", 0))
             self.notes_text.delete("1.0", tk.END)
             self.notes_text.insert("1.0", raw.get("notes", ""))
             self.update_calculations()

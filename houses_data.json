@@ -1,0 +1,46 @@
+[
+    {
+        "Address": "example2",
+        "Price": "$300,000",
+        "HOA": "$0",
+        "Interest Rate": "6.5%",
+        "Down %": "9%",
+        "Monthly": "$2,025.55",
+        "Total Cost": "$756,196.45",
+        "Raw Data": {
+            "address": "example2",
+            "price": 300000.0,
+            "hoa": 0.0,
+            "tax_rate": 1.2,
+            "interest_rate": 6.5,
+            "duration": 30,
+            "extra_principal": 0.0,
+            "down_payment_pct": 9,
+            "link": "google.com",
+            "notes": "example notes :)"
+        }
+    },
+    {
+        "Address": "example1",
+        "Price": "$150,000",
+        "HOA": "$500",
+        "Interest Rate": "5.9%",
+        "Down %": "20%",
+        "Monthly": "$1,976.23",
+        "Total Cost": "$207,747.81",
+        "Link": "https://www.usbank.com/home-loans/mortgage/mortgage-rates/florida.html",
+        "Raw Data": {
+            "address": "example1",
+            "price": 150000.0,
+            "hoa": 500.0,
+            "tax_rate": 1.2,
+            "interest_rate": 5.9,
+            "duration": 10,
+            "extra_principal": 1000.0,
+            "down_payment_pct": 20,
+            "down_payment_amt": 30000.0,
+            "link": "https://www.usbank.com/home-loans/mortgage/mortgage-rates/florida.html",
+            "notes": ""
+        }
+    }
+]

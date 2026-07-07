@@ -1,0 +1,28 @@
+[
+    {
+        "Source": "USGOV",
+        "Loan Name": "ExampleLoan",
+        "Type": "Federal - PLUS",
+        "Balance": "$100,000.00",
+        "Rate": "8.75%",
+        "Monthly": "$1,337.95",
+        "Interest": "$60,554.39",
+        "Total Cost": "$160,554.39",
+        "Link": "",
+        "Raw Data": {
+            "source": "USGOV",
+            "loan_name": "ExampleLoan",
+            "loan_type": "Federal - PLUS",
+            "balance": 100000.0,
+            "interest_rate": 9.0,
+            "autopay_discount": 0.25,
+            "term_years": 10,
+            "grace_period": 9,
+            "grace_interest": true,
+            "extra_payment": 0.0,
+            "origination_fee": 0.0,
+            "link": "",
+            "notes": ""
+        }
+    }
+]

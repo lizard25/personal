@@ -306,7 +306,7 @@ class HouseCostApp:
             var.trace_add("write", lambda *args: self.update_calculations())
 
     def on_price_change(self, *args):
-        if not hasattr(self, '_updating_flag'):
+        if not hasattr(self, '_updating_flag') or not self._updating_flag:
             self._updating_flag = True
             try:
                 price = self.price_var.get()

@@ -92,16 +92,16 @@
     {
         "Address": "Quote 250k 10yr",
         "Price": "$250,000",
-        "HOA": "$0",
+        "HOA": "$22",
         "Interest Rate": "5.875%",
         "Down %": "20%",
-        "Monthly": "$3,124.54",
-        "Total Cost": "$424,945.17",
+        "Monthly": "$3,147.04",
+        "Total Cost": "$427,645.17",
         "Link": "",
         "Raw Data": {
             "address": "Quote 250k 10yr",
             "price": 250000.0,
-            "hoa": 0.0,
+            "hoa": 22.5,
             "tax_rate": 2.0,
             "interest_rate": 5.875,
             "duration": 10,
@@ -114,8 +114,6 @@
             "utilities": 2400.0,
             "pmi_enabled": true,
             "pmi_rate": 0.5,
-            "income": 12000.0,
-            "other_debts": 0.0,
             "notes": "Melbourne florida quoted from premier lending including insurance and property tax from quote"
         }
     },

@@ -48,8 +48,37 @@ class HouseCostApp:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
+        # Scrollable container so content remains reachable in small windows
+        container = ttk.Frame(self.root)
+        container.grid(row=0, column=0, sticky="nsew")
+        container.columnconfigure(0, weight=1)
+        container.rowconfigure(0, weight=1)
+
+        self.scroll_canvas = tk.Canvas(container, highlightthickness=0)
+        self.scroll_canvas.grid(row=0, column=0, sticky="nsew")
+
+        y_scroll = ttk.Scrollbar(container, orient=tk.VERTICAL, command=self.scroll_canvas.yview)
+        y_scroll.grid(row=0, column=1, sticky="ns")
+        x_scroll = ttk.Scrollbar(container, orient=tk.HORIZONTAL, command=self.scroll_canvas.xview)
+        x_scroll.grid(row=1, column=0, sticky="ew")
+
+        self.scroll_canvas.configure(yscrollcommand=y_scroll.set, xscrollcommand=x_scroll.set)
+
+        content_frame = ttk.Frame(self.scroll_canvas)
+        self.scroll_window_id = self.scroll_canvas.create_window((0, 0), window=content_frame, anchor="nw")
+
+        def _update_scroll_region(event=None):
+            self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
+
+        content_frame.bind("<Configure>", _update_scroll_region)
+        self.scroll_canvas.bind("<Configure>", _update_scroll_region)
+
+        # Mouse wheel scrolling for convenience
+        self.root.bind_all("<MouseWheel>", lambda e: self.scroll_canvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
+        self.root.bind_all("<Shift-MouseWheel>", lambda e: self.scroll_canvas.xview_scroll(int(-1 * (e.delta / 120)), "units"))
+
         # Notebook with Calculator and Amortization tabs
-        notebook = ttk.Notebook(self.root)
+        notebook = ttk.Notebook(content_frame)
         notebook.grid(row=0, column=0, sticky="nsew")
         tab_calc = ttk.Frame(notebook)
         tab_amort = ttk.Frame(notebook)
@@ -134,15 +163,6 @@ class HouseCostApp:
         self.pmi_rate_var = tk.DoubleVar(value=0.5)
         ttk.Entry(input_frame, textvariable=self.pmi_rate_var).grid(row=13, column=1, sticky=tk.W, pady=5)
 
-        # Affordability inputs
-        ttk.Label(input_frame, text="Gross Monthly Income ($):").grid(row=14, column=0, sticky=tk.W, pady=5)
-        self.income_var = tk.DoubleVar(value=6000)
-        ttk.Entry(input_frame, textvariable=self.income_var).grid(row=14, column=1, sticky=tk.W, pady=5)
-
-        ttk.Label(input_frame, text="Other Monthly Debts ($):").grid(row=15, column=0, sticky=tk.W, pady=5)
-        self.other_debts_var = tk.DoubleVar(value=0)
-        ttk.Entry(input_frame, textvariable=self.other_debts_var).grid(row=15, column=1, sticky=tk.W, pady=5)
-
         # --- Interactive Section ---
         right_frame = ttk.Frame(main_frame)
         right_frame.grid(row=0, column=1, sticky="nsew")
@@ -187,7 +207,6 @@ class HouseCostApp:
         self.total_cost_var = tk.StringVar(value="$0.00")
         self.closing_costs_var = tk.StringVar(value="(Closing Costs: $0 - $0)")
         self.total_payments_var = tk.StringVar(value="0")
-        self.dti_var = tk.StringVar(value="DTI: 0%")
 
         ttk.Label(results_frame, text="Estimated Monthly Payment:").grid(row=0, column=0, sticky=tk.W, pady=5)
         ttk.Label(results_frame, textvariable=self.monthly_payment_var, font=('Helvetica', 14, 'bold'), foreground="blue").grid(row=0, column=1, sticky=tk.E, pady=5)
@@ -205,9 +224,6 @@ class HouseCostApp:
 
         ttk.Label(results_frame, text="Months to Pay Off:").grid(row=3, column=0, sticky=tk.W, pady=5)
         ttk.Label(results_frame, textvariable=self.total_payments_var, font=('Helvetica', 11)).grid(row=3, column=1, sticky=tk.E, pady=5)
-
-        ttk.Label(results_frame, text="Affordability:").grid(row=4, column=0, sticky=tk.W, pady=5)
-        ttk.Label(results_frame, textvariable=self.dti_var, font=('Helvetica', 11)).grid(row=4, column=1, sticky=tk.E, pady=5)
 
         # Buttons
         button_frame = ttk.Frame(right_frame)
@@ -275,7 +291,18 @@ class HouseCostApp:
         self.down_payment_pct_var.trace_add("write", self.on_pct_change)
         self.down_payment_amt_var.trace_add("write", self.on_amt_change)
         
-        for var in [self.hoa_var, self.tax_rate_var, self.interest_rate_var, self.duration_var, self.extra_principal_var]:
+        for var in [
+            self.hoa_var,
+            self.tax_rate_var,
+            self.interest_rate_var,
+            self.duration_var,
+            self.extra_principal_var,
+            self.insurance_var,
+            self.maintenance_var,
+            self.utilities_var,
+            self.pmi_enabled_var,
+            self.pmi_rate_var,
+        ]:
             var.trace_add("write", lambda *args: self.update_calculations())
 
     def on_price_change(self, *args):
@@ -382,22 +409,11 @@ class HouseCostApp:
             closing_min = price * 0.02
             closing_max = price * 0.05
 
-            # Affordability - DTI
-            income = float(self.income_var.get()) if hasattr(self, 'income_var') else 1
-            other_debts = float(self.other_debts_var.get()) if hasattr(self, 'other_debts_var') else 0
-            dti_pct = 0.0
-            try:
-                if income > 0:
-                    dti_pct = ((total_monthly_payment + other_debts) / income) * 100.0
-            except Exception:
-                dti_pct = 0.0
-
             self.monthly_payment_var.set(f"${total_monthly_payment:,.2f}")
             self.total_interest_var.set(f"${total_interest_paid:,.2f}")
             self.total_cost_var.set(f"${total_cost:,.2f}")
             self.closing_costs_var.set(f"(Closing Costs: ${closing_min:,.0f} - ${closing_max:,.0f})")
             self.total_payments_var.set(f"{months_count}")
-            self.dti_var.set(f"DTI: {dti_pct:.1f}%")
             # keep amortization view in sync
             self.refresh_amortization()
             
@@ -500,8 +516,6 @@ class HouseCostApp:
                     "utilities": self.utilities_var.get(),
                     "pmi_enabled": self.pmi_enabled_var.get(),
                     "pmi_rate": self.pmi_rate_var.get(),
-                    "income": self.income_var.get(),
-                    "other_debts": self.other_debts_var.get(),
                     "notes": self.notes_text.get("1.0", tk.END).strip()
                 }
             }
@@ -535,8 +549,13 @@ class HouseCostApp:
     def on_double_click(self, event):
         item = self.tree.identify_row(event.y)
         column = self.tree.identify_column(event.x)
-        if item and column == "#8": # Link column
+        if not item:
+            return
+        if column == "#8": # Link column
             self.open_link()
+            return
+        self.tree.selection_set(item)
+        self.load_house()
 
     def open_link(self):
         selection = self.tree.selection()
@@ -589,8 +608,6 @@ class HouseCostApp:
             self.utilities_var.set(raw.get("utilities", 2400))
             self.pmi_enabled_var.set(raw.get("pmi_enabled", False))
             self.pmi_rate_var.set(raw.get("pmi_rate", 0.5))
-            self.income_var.set(raw.get("income", 6000))
-            self.other_debts_var.set(raw.get("other_debts", 0))
             self.notes_text.delete("1.0", tk.END)
             self.notes_text.insert("1.0", raw.get("notes", ""))
             self.update_calculations()

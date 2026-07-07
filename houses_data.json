@@ -88,5 +88,65 @@
             "other_debts": 2000.0,
             "notes": "assuming brevard county and high utility bills"
         }
+    },
+    {
+        "Address": "Quote 250k 10yr",
+        "Price": "$250,000",
+        "HOA": "$0",
+        "Interest Rate": "5.875%",
+        "Down %": "20%",
+        "Monthly": "$3,124.54",
+        "Total Cost": "$424,945.17",
+        "Link": "",
+        "Raw Data": {
+            "address": "Quote 250k 10yr",
+            "price": 250000.0,
+            "hoa": 0.0,
+            "tax_rate": 2.0,
+            "interest_rate": 5.875,
+            "duration": 10,
+            "extra_principal": 0.0,
+            "down_payment_pct": 20,
+            "down_payment_amt": 50000.0,
+            "link": "",
+            "insurance": 3600.0,
+            "maintenance": 0.0,
+            "utilities": 2400.0,
+            "pmi_enabled": true,
+            "pmi_rate": 0.5,
+            "income": 12000.0,
+            "other_debts": 0.0,
+            "notes": "Melbourne florida quoted from premier lending including insurance and property tax from quote"
+        }
+    },
+    {
+        "Address": "Quote 250k 30yr",
+        "Price": "$250,000",
+        "HOA": "$0",
+        "Interest Rate": "6.375%",
+        "Down %": "20%",
+        "Monthly": "$2,164.41",
+        "Total Cost": "$829,186.33",
+        "Link": "",
+        "Raw Data": {
+            "address": "Quote 250k 30yr",
+            "price": 250000.0,
+            "hoa": 0.0,
+            "tax_rate": 2.0,
+            "interest_rate": 6.375,
+            "duration": 30,
+            "extra_principal": 0.0,
+            "down_payment_pct": 20,
+            "down_payment_amt": 50000.0,
+            "link": "",
+            "insurance": 3600.0,
+            "maintenance": 0.0,
+            "utilities": 2400.0,
+            "pmi_enabled": true,
+            "pmi_rate": 0.5,
+            "income": 12000.0,
+            "other_debts": 0.0,
+            "notes": "Melbourne florida quoted from premier lending including insurance and property tax from quote. Prepaids and Initial Escrow Payment at Closing $6,460.42. Taxes and Other Government Fees $2,236.50 Third Party Fees $3,725 Lender Fees $3,793"
+        }
     }
 ]

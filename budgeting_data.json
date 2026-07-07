@@ -1,0 +1,291 @@
+[
+    {
+        "Budget Name": "Evan",
+        "Income": "$3,653.85 / Biweekly",
+        "Savings": "$0.00 / Monthly",
+        "Monthly Expenses": "$5,778.05",
+        "Monthly Net": "$2,138.62",
+        "Yearly Net": "$25,663.46",
+        "Raw Data": {
+            "budget_name": "Evan",
+            "income_amount": 3653.85,
+            "income_frequency": "Biweekly",
+            "savings_amount": 0.0,
+            "savings_frequency": "Monthly",
+            "expenses": [
+                {
+                    "name": "Life Insurance",
+                    "amount": 1.1,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "basic health",
+                    "amount": 12.64,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "401k (basic match & deduction)",
+                    "amount": 274.05,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "life, STD, and AD&D ER",
+                    "amount": 7.12,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX federal withholding",
+                    "amount": 440.12,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX FICA EE",
+                    "amount": 226.61,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX MWT EE",
+                    "amount": 53.0,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "housing (mortgage, utilities, etc.)",
+                    "amount": 1500.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "Groceries",
+                    "amount": 60.0,
+                    "frequency": "Weekly"
+                },
+                {
+                    "name": "25/26 loan 9%",
+                    "amount": 545.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "24/25 loan 8.9%",
+                    "amount": 450.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "23/24 loan 8%",
+                    "amount": 500.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "22/23 loan 7.5%",
+                    "amount": 88.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "(projected) car insurance",
+                    "amount": 1000.0,
+                    "frequency": "Annually"
+                },
+                {
+                    "name": "misc groceries",
+                    "amount": 20.0,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "climbing gym",
+                    "amount": 70.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "copilot pro+",
+                    "amount": 40.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "Eating out",
+                    "amount": 0.0,
+                    "frequency": "Weekly"
+                }
+            ],
+            "notes": ""
+        }
+    },
+    {
+        "Budget Name": "Evan projected budget",
+        "Income": "$3,653.85 / Biweekly",
+        "Savings": "$0.00 / Monthly",
+        "Monthly Expenses": "$6,141.39",
+        "Monthly Net": "$1,775.29",
+        "Yearly Net": "$21,303.46",
+        "Raw Data": {
+            "budget_name": "Evan projected budget",
+            "income_amount": 3653.85,
+            "income_frequency": "Biweekly",
+            "savings_amount": 0.0,
+            "savings_frequency": "Monthly",
+            "expenses": [
+                {
+                    "name": "Life Insurance",
+                    "amount": 1.1,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "basic health",
+                    "amount": 12.64,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "401k (basic match & deduction)",
+                    "amount": 274.05,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "life, STD, and AD&D ER",
+                    "amount": 7.12,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX federal withholding",
+                    "amount": 440.12,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX FICA EE",
+                    "amount": 226.61,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX MWT EE",
+                    "amount": 53.0,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "housing (mortgage, utilities, etc.)",
+                    "amount": 1500.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "Groceries",
+                    "amount": 80.0,
+                    "frequency": "Weekly"
+                },
+                {
+                    "name": "25/26 loan 9%",
+                    "amount": 545.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "24/25 loan 8.9%",
+                    "amount": 450.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "23/24 loan 8%",
+                    "amount": 500.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "22/23 loan 7.5%",
+                    "amount": 88.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "(projected) car insurance",
+                    "amount": 1000.0,
+                    "frequency": "Annually"
+                },
+                {
+                    "name": "misc groceries",
+                    "amount": 20.0,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "climbing gym",
+                    "amount": 70.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "copilot pro+",
+                    "amount": 40.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "Eating out",
+                    "amount": 50.0,
+                    "frequency": "Weekly"
+                },
+                {
+                    "name": "Cell Service",
+                    "amount": 60.0,
+                    "frequency": "Monthly"
+                }
+            ],
+            "notes": ""
+        }
+    },
+    {
+        "Budget Name": "Evan early july savings maxxing",
+        "Income": "$3,663.85 / Biweekly",
+        "Savings": "$4,700.00 / Monthly",
+        "Monthly Expenses": "$3,106.72",
+        "Monthly Net": "$131.62",
+        "Yearly Net": "$1,579.46",
+        "Raw Data": {
+            "budget_name": "Evan early july savings maxxing",
+            "income_amount": 3663.85,
+            "income_frequency": "Biweekly",
+            "savings_amount": 4700.0,
+            "savings_frequency": "Monthly",
+            "expenses": [
+                {
+                    "name": "Life Insurance",
+                    "amount": 1.1,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "basic health",
+                    "amount": 12.64,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "401k (basic match & deduction)",
+                    "amount": 274.05,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "life, STD, and AD&D ER",
+                    "amount": 7.12,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX federal withholding",
+                    "amount": 440.12,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX FICA EE",
+                    "amount": 226.61,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "TAX MWT EE",
+                    "amount": 53.0,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "housing (mortgage, utilities, etc.)",
+                    "amount": 825.0,
+                    "frequency": "Monthly"
+                },
+                {
+                    "name": "misc groceries",
+                    "amount": 20.0,
+                    "frequency": "Biweekly"
+                },
+                {
+                    "name": "copilot pro+",
+                    "amount": 40.0,
+                    "frequency": "Monthly"
+                }
+            ],
+            "notes": ""
+        }
+    }
+]

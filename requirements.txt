@@ -1,0 +1,5 @@
+# This project currently uses only Python standard library modules.
+# No pip-installed packages are required for the calculators to run.
+#
+# Linux note: Tkinter is part of Python stdlib but may require OS package:
+# sudo apt-get install python3-tk

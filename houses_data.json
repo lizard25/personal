@@ -146,5 +146,33 @@
             "other_debts": 0.0,
             "notes": "Melbourne florida quoted from premier lending including insurance and property tax from quote. Prepaids and Initial Escrow Payment at Closing $6,460.42. Taxes and Other Government Fees $2,236.50 Third Party Fees $3,725 Lender Fees $3,793"
         }
+    },
+    {
+        "Address": "Quote 275k 10yr",
+        "Price": "$275,000",
+        "HOA": "$22",
+        "Interest Rate": "5.875%",
+        "Down %": "20%",
+        "Monthly": "$3,409.50",
+        "Total Cost": "$464,139.69",
+        "Link": "",
+        "Raw Data": {
+            "address": "Quote 275k 10yr",
+            "price": 275000.0,
+            "hoa": 22.5,
+            "tax_rate": 2.0,
+            "interest_rate": 5.875,
+            "duration": 10,
+            "extra_principal": 0.0,
+            "down_payment_pct": 20,
+            "down_payment_amt": 55000.0,
+            "link": "",
+            "insurance": 3600.0,
+            "maintenance": 0.0,
+            "utilities": 2400.0,
+            "pmi_enabled": true,
+            "pmi_rate": 0.5,
+            "notes": "Melbourne florida quoted from premier lending including insurance and property tax from quote"
+        }
     }
 ]

@@ -13,7 +13,10 @@ class StudentLoanApp:
 		self.root.geometry("1280x920")
 
 		self.data_file = "Student_loans_data.json"
-		self.loans = self.load_data()
+		self.loans = []
+		self.portfolio_extra_payment = 0.0
+		self.portfolio_rollover_enabled = False
+		self.load_data()
 
 		self.setup_ui()
 		self.update_calculations()
@@ -22,15 +25,47 @@ class StudentLoanApp:
 		if os.path.exists(self.data_file):
 			try:
 				with open(self.data_file, "r", encoding="utf-8") as file_handle:
-					return json.load(file_handle)
+					data = json.load(file_handle)
+
+				if isinstance(data, list):
+					self.loans = data
+					self.portfolio_extra_payment = 0.0
+					self.portfolio_rollover_enabled = False
+					return
+
+				if isinstance(data, dict):
+					self.loans = data.get("loans", [])
+					portfolio_settings = data.get("portfolio_settings", {})
+					try:
+						self.portfolio_extra_payment = max(float(portfolio_settings.get("extra_principal_payment", 0.0)), 0.0)
+					except (TypeError, ValueError):
+						self.portfolio_extra_payment = 0.0
+					self.portfolio_rollover_enabled = bool(portfolio_settings.get("rollover_paid_off_minimums", False))
+					return
 			except (OSError, json.JSONDecodeError):
-				return []
-		return []
+				self.loans = []
+				self.portfolio_extra_payment = 0.0
+				self.portfolio_rollover_enabled = False
+				return
+
+		self.loans = []
+		self.portfolio_extra_payment = 0.0
+		self.portfolio_rollover_enabled = False
 
 	def save_data(self):
 		try:
 			with open(self.data_file, "w", encoding="utf-8") as file_handle:
-				json.dump(self.loans, file_handle, indent=4)
+				json.dump(
+					{
+						"loans": self.loans,
+						"portfolio_settings": {
+							"extra_principal_payment": max(float(self.portfolio_extra_payment), 0.0),
+							"rollover_paid_off_minimums": bool(self.portfolio_rollover_enabled),
+						},
+					},
+					file_handle,
+					indent=4,
+				)
 		except OSError as error:
 			messagebox.showerror("Save Error", f"Could not save student loan data: {error}")
 
@@ -80,10 +115,12 @@ class StudentLoanApp:
 		tab_calc = ttk.Frame(notebook)
 		tab_portfolio = ttk.Frame(notebook)
 		tab_amort = ttk.Frame(notebook)
+		tab_portfolio_amort = ttk.Frame(notebook)
 
 		notebook.add(tab_calc, text="Calculator")
 		notebook.add(tab_portfolio, text="Portfolio Summary")
 		notebook.add(tab_amort, text="Amortization")
+		notebook.add(tab_portfolio_amort, text="Portfolio Amortization")
 
 		main_frame = ttk.Frame(tab_calc, padding="15")
 		main_frame.grid(row=0, column=0, sticky="nsew")
@@ -210,6 +247,7 @@ class StudentLoanApp:
 		ttk.Button(button_frame, text="Clear Fields", command=self.clear_fields).grid(row=0, column=1, padx=10)
 		ttk.Button(button_frame, text="Portfolio Summary", command=lambda: notebook.select(tab_portfolio)).grid(row=0, column=2, padx=10)
 		ttk.Button(button_frame, text="Show Amortization", command=lambda: notebook.select(tab_amort)).grid(row=0, column=3, padx=10)
+		ttk.Button(button_frame, text="Portfolio Amortization", command=lambda: notebook.select(tab_portfolio_amort)).grid(row=0, column=4, padx=10)
 
 		table_frame = ttk.LabelFrame(main_frame, text="Saved Student Loans", padding="15")
 		table_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
@@ -258,6 +296,8 @@ class StudentLoanApp:
 		self.portfolio_cost_var = tk.StringVar(value="$0.00")
 		self.portfolio_count_var = tk.StringVar(value="0")
 		self.portfolio_payoff_var = tk.StringVar(value="0")
+		self.portfolio_extra_payment_var = tk.DoubleVar(value=self.portfolio_extra_payment)
+		self.portfolio_rollover_var = tk.StringVar(value="on" if self.portfolio_rollover_enabled else "off")
 
 		ttk.Label(totals_frame, text="Total Current Balance:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=4)
 		ttk.Label(totals_frame, textvariable=self.portfolio_balance_var, font=("Helvetica", 11, "bold")).grid(row=0, column=1, sticky=tk.W, padx=5, pady=4)
@@ -276,6 +316,17 @@ class StudentLoanApp:
 
 		ttk.Label(totals_frame, text="Longest Payoff Timeline (Months):").grid(row=2, column=2, sticky=tk.W, padx=5, pady=4)
 		ttk.Label(totals_frame, textvariable=self.portfolio_payoff_var).grid(row=2, column=3, sticky=tk.W, padx=5, pady=4)
+
+		extra_frame = ttk.Frame(totals_frame)
+		extra_frame.grid(row=3, column=0, columnspan=4, sticky="w", padx=5, pady=(8, 0))
+		ttk.Label(extra_frame, text="Portfolio Extra Principal / Month ($):").grid(row=0, column=0, sticky=tk.W, padx=(0, 6))
+		ttk.Entry(extra_frame, textvariable=self.portfolio_extra_payment_var, width=14).grid(row=0, column=1, sticky=tk.W)
+		ttk.Label(extra_frame, text="Rollover Paid-Off Minimums:").grid(row=0, column=2, sticky=tk.W, padx=(16, 6))
+		ttk.Radiobutton(extra_frame, text="On", value="on", variable=self.portfolio_rollover_var).grid(row=0, column=3, sticky=tk.W)
+		ttk.Radiobutton(extra_frame, text="Off", value="off", variable=self.portfolio_rollover_var).grid(row=0, column=4, sticky=tk.W, padx=(4, 0))
+		ttk.Button(extra_frame, text="Save", command=self.save_portfolio_extra_payment).grid(row=0, column=5, sticky=tk.W, padx=(12, 0))
+
+		self.portfolio_rollover_var.trace_add("write", lambda *_args: self.refresh_portfolio_summary())
 
 		source_frame = ttk.LabelFrame(portfolio_frame, text="Totals by Source", padding="15")
 		source_frame.grid(row=1, column=0, sticky="nsew", pady=(0, 10))
@@ -325,6 +376,39 @@ class StudentLoanApp:
 		ttk.Button(amort_buttons, text="Export CSV", command=self.export_amortization_csv).grid(row=0, column=0, padx=6)
 		ttk.Button(amort_buttons, text="Back to Calculator", command=lambda: notebook.select(tab_calc)).grid(row=0, column=1, padx=6)
 
+		portfolio_amort_frame = ttk.Frame(tab_portfolio_amort, padding="10")
+		portfolio_amort_frame.grid(row=0, column=0, sticky="nsew")
+		portfolio_amort_frame.columnconfigure(0, weight=1)
+
+		portfolio_amort_columns = ("Month", "Source", "Loan Name", "Phase", "Payment", "Principal", "Interest", "Balance")
+		self.portfolio_amort_tree = ttk.Treeview(portfolio_amort_frame, columns=portfolio_amort_columns, show="headings", height=20)
+		for column_name in portfolio_amort_columns:
+			self.portfolio_amort_tree.heading(column_name, text=column_name)
+			width = 120
+			if column_name == "Month":
+				width = 70
+			elif column_name == "Source":
+				width = 150
+			elif column_name == "Loan Name":
+				width = 170
+			elif column_name == "Phase":
+				width = 110
+			self.portfolio_amort_tree.column(column_name, width=width, anchor=tk.E)
+		self.portfolio_amort_tree.column("Month", anchor=tk.CENTER)
+		self.portfolio_amort_tree.column("Source", anchor=tk.W)
+		self.portfolio_amort_tree.column("Loan Name", anchor=tk.W)
+		self.portfolio_amort_tree.column("Phase", anchor=tk.CENTER)
+		self.portfolio_amort_tree.grid(row=0, column=0, sticky="nsew")
+
+		portfolio_amort_scroll = ttk.Scrollbar(portfolio_amort_frame, orient=tk.VERTICAL, command=self.portfolio_amort_tree.yview)
+		self.portfolio_amort_tree.configure(yscrollcommand=portfolio_amort_scroll.set)
+		portfolio_amort_scroll.grid(row=0, column=1, sticky="ns")
+
+		portfolio_amort_buttons = ttk.Frame(portfolio_amort_frame)
+		portfolio_amort_buttons.grid(row=1, column=0, sticky="e", pady=8)
+		ttk.Button(portfolio_amort_buttons, text="Export CSV", command=self.export_portfolio_amortization_csv).grid(row=0, column=0, padx=6)
+		ttk.Button(portfolio_amort_buttons, text="Back to Portfolio", command=lambda: notebook.select(tab_portfolio)).grid(row=0, column=1, padx=6)
+
 		for variable in [
 			self.source_var,
 			self.loan_name_var,
@@ -344,6 +428,20 @@ class StudentLoanApp:
 		self.refresh_table()
 		self.refresh_portfolio_summary()
 		self.refresh_amortization()
+		self.refresh_portfolio_amortization()
+
+	def save_portfolio_extra_payment(self):
+		try:
+			extra_payment = max(float(self.portfolio_extra_payment_var.get()), 0.0)
+		except (ValueError, tk.TclError):
+			messagebox.showerror("Input Error", "Enter a valid non-negative number for the portfolio extra payment.")
+			return
+
+		self.portfolio_extra_payment = extra_payment
+		self.portfolio_rollover_enabled = self.portfolio_rollover_var.get() == "on"
+		self.save_data()
+		self.refresh_portfolio_summary()
+		messagebox.showinfo("Saved", "Portfolio settings saved.")
 
 	def format_currency(self, value):
 		return f"${value:,.2f}"
@@ -526,6 +624,76 @@ class StudentLoanApp:
 		except OSError as error:
 			messagebox.showerror("Export Error", f"Could not export amortization: {error}")
 
+	def generate_portfolio_amortization_schedule(self):
+		try:
+			extra_payment = max(float(self.portfolio_extra_payment_var.get()), 0.0)
+		except (ValueError, tk.TclError):
+			extra_payment = max(float(self.portfolio_extra_payment), 0.0)
+
+		rollover_enabled = self.portfolio_rollover_var.get() == "on"
+		portfolio = self.simulate_portfolio_payoff(extra_payment, rollover_enabled, include_schedule=True)
+		return portfolio["schedule"]
+
+	def refresh_portfolio_amortization(self):
+		try:
+			rows = self.generate_portfolio_amortization_schedule()
+		except (ValueError, tk.TclError):
+			rows = []
+
+		for item in self.portfolio_amort_tree.get_children():
+			self.portfolio_amort_tree.delete(item)
+
+		for row in rows:
+			self.portfolio_amort_tree.insert(
+				"",
+				tk.END,
+				values=(
+					row["month"],
+					row["source"],
+					row["loan_name"],
+					row["phase"],
+					self.format_currency(row["payment"]),
+					self.format_currency(row["principal"]),
+					self.format_currency(row["interest"]),
+					self.format_currency(row["balance"]),
+				),
+			)
+
+	def export_portfolio_amortization_csv(self):
+		try:
+			rows = self.generate_portfolio_amortization_schedule()
+		except (ValueError, tk.TclError):
+			rows = []
+
+		if not rows:
+			messagebox.showinfo("No Data", "No portfolio amortization data to export.")
+			return
+
+		path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+		if not path:
+			return
+
+		try:
+			with open(path, "w", newline="", encoding="utf-8") as csv_file:
+				writer = csv.writer(csv_file)
+				writer.writerow(["Month", "Source", "Loan Name", "Phase", "Payment", "Principal", "Interest", "Balance"])
+				for row in rows:
+					writer.writerow(
+						[
+							row["month"],
+							row["source"],
+							row["loan_name"],
+							row["phase"],
+							round(row["payment"], 2),
+							round(row["principal"], 2),
+							round(row["interest"], 2),
+							round(row["balance"], 2),
+						]
+					)
+			messagebox.showinfo("Exported", f"Portfolio amortization exported to {path}")
+		except OSError as error:
+			messagebox.showerror("Export Error", f"Could not export portfolio amortization: {error}")
+
 	def build_loan_record(self):
 		raw_data = self.get_form_data()
 		metrics = self.calculate_metrics(raw_data)
@@ -597,50 +765,32 @@ class StudentLoanApp:
 			)
 
 	def refresh_portfolio_summary(self):
-		source_totals = {}
-		total_balance = 0.0
-		total_monthly = 0.0
-		total_interest = 0.0
-		total_cost = 0.0
-		longest_payoff = 0
+		try:
+			extra_payment = max(float(self.portfolio_extra_payment_var.get()), 0.0)
+		except (ValueError, tk.TclError):
+			extra_payment = max(float(self.portfolio_extra_payment), 0.0)
 
+		rollover_enabled = self.portfolio_rollover_var.get() == "on"
+
+		base_monthly_payment = 0.0
 		for loan in self.loans:
 			raw_data = loan.get("Raw Data", {})
 			try:
 				metrics = self.calculate_metrics(raw_data)
 			except (ValueError, tk.TclError):
 				continue
+			base_monthly_payment += metrics["planned_monthly_payment"]
 
-			source = raw_data.get("source", "Unknown") or "Unknown"
-			source_totals.setdefault(
-				source,
-				{
-					"loan_count": 0,
-					"balance": 0.0,
-					"monthly": 0.0,
-					"interest": 0.0,
-					"total_cost": 0.0,
-				},
-			)
+		portfolio = self.simulate_portfolio_payoff(extra_payment, rollover_enabled)
+		source_totals = portfolio["source_totals"]
+		combined_monthly_payment = base_monthly_payment + (extra_payment if portfolio["loan_count"] > 0 else 0.0)
 
-			source_totals[source]["loan_count"] += 1
-			source_totals[source]["balance"] += metrics["current_balance"]
-			source_totals[source]["monthly"] += metrics["planned_monthly_payment"]
-			source_totals[source]["interest"] += metrics["total_interest_paid"]
-			source_totals[source]["total_cost"] += metrics["total_cost"]
-
-			total_balance += metrics["current_balance"]
-			total_monthly += metrics["planned_monthly_payment"]
-			total_interest += metrics["total_interest_paid"]
-			total_cost += metrics["total_cost"]
-			longest_payoff = max(longest_payoff, metrics["total_months"])
-
-		self.portfolio_balance_var.set(self.format_currency(total_balance))
-		self.portfolio_monthly_var.set(self.format_currency(total_monthly))
-		self.portfolio_interest_var.set(self.format_currency(total_interest))
-		self.portfolio_cost_var.set(self.format_currency(total_cost))
-		self.portfolio_count_var.set(str(len(self.loans)))
-		self.portfolio_payoff_var.set(str(longest_payoff))
+		self.portfolio_balance_var.set(self.format_currency(portfolio["total_balance"]))
+		self.portfolio_monthly_var.set(self.format_currency(combined_monthly_payment))
+		self.portfolio_interest_var.set(self.format_currency(portfolio["total_interest"]))
+		self.portfolio_cost_var.set(self.format_currency(portfolio["total_cost"]))
+		self.portfolio_count_var.set(str(portfolio["loan_count"]))
+		self.portfolio_payoff_var.set(str(portfolio["total_months"]))
 
 		for item in self.source_tree.get_children():
 			self.source_tree.delete(item)
@@ -660,6 +810,214 @@ class StudentLoanApp:
 			)
 
 		self.draw_source_chart(source_totals)
+		self.refresh_portfolio_amortization()
+
+	def simulate_portfolio_payoff(self, portfolio_extra_payment, rollover_enabled=False, include_schedule=False):
+		source_totals = {}
+		loan_states = []
+		schedule = []
+		total_balance = 0.0
+		total_origination_cost = 0.0
+
+		for loan_index, loan in enumerate(self.loans):
+			raw_data = loan.get("Raw Data", {})
+			try:
+				starting_balance = max(float(raw_data.get("balance", 0)), 0.0)
+				stated_rate = max(float(raw_data.get("interest_rate", 0)), 0.0)
+				autopay_discount = max(float(raw_data.get("autopay_discount", 0)), 0.0)
+				term_years = max(int(raw_data.get("term_years", 10)), 1)
+				grace_period = max(int(raw_data.get("grace_period", 0)), 0)
+				loan_extra_payment = max(float(raw_data.get("extra_payment", 0)), 0.0)
+				origination_rate = max(float(raw_data.get("origination_fee", 0)), 0.0)
+				accrues_during_grace = bool(raw_data.get("grace_interest", False))
+			except (TypeError, ValueError, tk.TclError):
+				continue
+
+			effective_rate = max(stated_rate - autopay_discount, 0.0)
+			monthly_rate = effective_rate / 100.0 / 12.0
+			source = (raw_data.get("source", "Unknown") or "Unknown").strip() or "Unknown"
+
+			source_totals.setdefault(
+				source,
+				{
+					"loan_count": 0,
+					"balance": 0.0,
+					"monthly": 0.0,
+					"month_one_payment": 0.0,
+					"interest": 0.0,
+					"total_cost": 0.0,
+					"origination": 0.0,
+				},
+			)
+
+			origination_cost = starting_balance * (origination_rate / 100.0)
+
+			source_totals[source]["loan_count"] += 1
+			source_totals[source]["balance"] += starting_balance
+			source_totals[source]["origination"] += origination_cost
+
+			total_balance += starting_balance
+			total_origination_cost += origination_cost
+
+			if starting_balance <= 0:
+				continue
+
+			loan_states.append(
+				{
+					"id": loan_index,
+					"source": source,
+					"loan_name": raw_data.get("loan_name", loan.get("Loan Name", "Loan")) or "Loan",
+					"balance": starting_balance,
+					"effective_rate": effective_rate,
+					"monthly_rate": monthly_rate,
+					"term_months": term_years * 12,
+					"grace_period": grace_period,
+					"accrues_during_grace": accrues_during_grace,
+					"loan_extra_payment": loan_extra_payment,
+					"minimum_payment": None,
+					"minimum_rolled_over": False,
+				},
+			)
+
+		starting_monthly_payment = 0.0
+		total_interest = 0.0
+		total_months = 0
+		max_months = 3600
+		rollover_minimum_pool = 0.0
+
+		while loan_states and total_months < max_months:
+			total_months += 1
+			monthly_paid_total = 0.0
+			month_rows = {}
+
+			for loan_state in loan_states:
+				balance = loan_state["balance"]
+				if balance <= 0.01:
+					continue
+
+				phase = "Repayment"
+
+				if total_months <= loan_state["grace_period"]:
+					phase = "Grace"
+					interest_charge = balance * loan_state["monthly_rate"] if loan_state["accrues_during_grace"] else 0.0
+					payment_amount = 0.0
+					principal_component = 0.0
+					if interest_charge > 0:
+						loan_state["balance"] += interest_charge
+						total_interest += interest_charge
+						source_totals[loan_state["source"]]["interest"] += interest_charge
+				else:
+					if loan_state["minimum_payment"] is None:
+						if loan_state["monthly_rate"] > 0:
+							factor = (1 + loan_state["monthly_rate"]) ** loan_state["term_months"]
+							loan_state["minimum_payment"] = loan_state["balance"] * ((loan_state["monthly_rate"] * factor) / (factor - 1))
+						else:
+							loan_state["minimum_payment"] = loan_state["balance"] / loan_state["term_months"]
+
+					interest_charge = loan_state["balance"] * loan_state["monthly_rate"]
+					loan_state["balance"] += interest_charge
+					total_interest += interest_charge
+					source_totals[loan_state["source"]]["interest"] += interest_charge
+
+					target_payment = max(loan_state["minimum_payment"] + loan_state["loan_extra_payment"], 0.0)
+					payment_amount = min(target_payment, loan_state["balance"])
+					principal_component = max(payment_amount - interest_charge, 0.0)
+					loan_state["balance"] -= payment_amount
+
+				if payment_amount > 0:
+					monthly_paid_total += payment_amount
+					source_totals[loan_state["source"]]["total_cost"] += payment_amount
+					if total_months == 1:
+						source_totals[loan_state["source"]]["month_one_payment"] += payment_amount
+
+				if include_schedule:
+					month_rows[loan_state["id"]] = {
+						"month": total_months,
+						"source": loan_state["source"],
+						"loan_name": loan_state["loan_name"],
+						"phase": phase,
+						"payment": payment_amount,
+						"principal": principal_component,
+						"interest": interest_charge,
+						"balance": loan_state["balance"],
+					}
+
+			remaining_extra = max(float(portfolio_extra_payment), 0.0)
+			if rollover_enabled:
+				remaining_extra += rollover_minimum_pool
+			while remaining_extra > 0:
+				active_loans = [loan for loan in loan_states if loan["balance"] > 0.01]
+				if not active_loans:
+					break
+
+				target = max(active_loans, key=lambda loan: (loan["effective_rate"], loan["balance"]))
+				extra_payment = min(remaining_extra, target["balance"])
+				target["balance"] -= extra_payment
+				remaining_extra -= extra_payment
+				monthly_paid_total += extra_payment
+				source_totals[target["source"]]["total_cost"] += extra_payment
+				if total_months == 1:
+					source_totals[target["source"]]["month_one_payment"] += extra_payment
+				if include_schedule:
+					month_row = month_rows.get(target["id"])
+					if month_row is None:
+						month_row = {
+							"month": total_months,
+							"source": target["source"],
+							"loan_name": target["loan_name"],
+							"phase": "Extra Only",
+							"payment": 0.0,
+							"principal": 0.0,
+							"interest": 0.0,
+							"balance": target["balance"],
+						}
+						month_rows[target["id"]] = month_row
+					month_row["payment"] += extra_payment
+					month_row["principal"] += extra_payment
+					month_row["balance"] = target["balance"]
+
+			if total_months == 1:
+				starting_monthly_payment = monthly_paid_total
+
+			if rollover_enabled:
+				newly_rolled_minimum = sum(
+					loan["minimum_payment"]
+					for loan in loan_states
+					if loan["balance"] <= 0.01 and loan["minimum_payment"] is not None and not loan["minimum_rolled_over"]
+				)
+				if newly_rolled_minimum > 0:
+					rollover_minimum_pool += newly_rolled_minimum
+					for loan in loan_states:
+						if loan["balance"] <= 0.01 and loan["minimum_payment"] is not None:
+							loan["minimum_rolled_over"] = True
+
+			if include_schedule and month_rows:
+				schedule.extend(
+					sorted(
+						month_rows.values(),
+						key=lambda row: (row["month"], row["source"], row["loan_name"]),
+					)
+				)
+
+			loan_states = [loan for loan in loan_states if loan["balance"] > 0.01]
+
+		if loan_states and total_months >= max_months:
+			total_months = max_months
+
+		for source_data in source_totals.values():
+			source_data["total_cost"] += source_data["origination"]
+			source_data["monthly"] = source_data["month_one_payment"]
+
+		return {
+			"source_totals": source_totals,
+			"total_balance": total_balance,
+			"starting_monthly_payment": starting_monthly_payment,
+			"total_interest": total_interest,
+			"total_cost": total_balance + total_origination_cost + total_interest,
+			"loan_count": len(self.loans),
+			"total_months": total_months,
+			"schedule": schedule,
+		}
 
 	def draw_source_chart(self, source_totals):
 		self.source_canvas.delete("all")

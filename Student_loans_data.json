@@ -1,28 +1,138 @@
-[
-    {
-        "Source": "USGOV",
-        "Loan Name": "ExampleLoan",
-        "Type": "Federal - PLUS",
-        "Balance": "$100,000.00",
-        "Rate": "8.75%",
-        "Monthly": "$1,337.95",
-        "Interest": "$60,554.39",
-        "Total Cost": "$160,554.39",
-        "Link": "",
-        "Raw Data": {
-            "source": "USGOV",
-            "loan_name": "ExampleLoan",
-            "loan_type": "Federal - PLUS",
-            "balance": 100000.0,
-            "interest_rate": 9.0,
-            "autopay_discount": 0.25,
-            "term_years": 10,
-            "grace_period": 9,
-            "grace_interest": true,
-            "extra_payment": 0.0,
-            "origination_fee": 0.0,
-            "link": "",
-            "notes": ""
+{
+    "loans": [
+        {
+            "Source": "USGOV1",
+            "Loan Name": "22/23",
+            "Type": "Federal - PLUS",
+            "Balance": "$7,400.00",
+            "Rate": "6.50%",
+            "Monthly": "$88.21",
+            "Interest": "$3,185.40",
+            "Total Cost": "$10,585.40",
+            "Link": "",
+            "Raw Data": {
+                "source": "USGOV1",
+                "loan_name": "22/23",
+                "loan_type": "Federal - PLUS",
+                "balance": 7400.0,
+                "interest_rate": 7.5,
+                "autopay_discount": 1.0,
+                "term_years": 10,
+                "grace_period": 9,
+                "grace_interest": true,
+                "extra_payment": 0.0,
+                "origination_fee": 0.0,
+                "link": "",
+                "notes": ""
+            }
+        },
+        {
+            "Source": "USGOV2",
+            "Loan Name": "23/24",
+            "Type": "Federal - PLUS",
+            "Balance": "$41,000.00",
+            "Rate": "7.00%",
+            "Monthly": "$501.63",
+            "Interest": "$19,195.39",
+            "Total Cost": "$60,195.39",
+            "Link": "",
+            "Raw Data": {
+                "source": "USGOV2",
+                "loan_name": "23/24",
+                "loan_type": "Federal - PLUS",
+                "balance": 41000.0,
+                "interest_rate": 8.0,
+                "autopay_discount": 1.0,
+                "term_years": 10,
+                "grace_period": 9,
+                "grace_interest": true,
+                "extra_payment": 0.0,
+                "origination_fee": 0.0,
+                "link": "",
+                "notes": ""
+            }
+        },
+        {
+            "Source": "USGOV3",
+            "Loan Name": "24/25",
+            "Type": "Federal - PLUS",
+            "Balance": "$35,000.00",
+            "Rate": "7.90%",
+            "Monthly": "$448.52",
+            "Interest": "$18,822.43",
+            "Total Cost": "$53,822.43",
+            "Link": "",
+            "Raw Data": {
+                "source": "USGOV3",
+                "loan_name": "24/25",
+                "loan_type": "Federal - PLUS",
+                "balance": 35000.0,
+                "interest_rate": 8.9,
+                "autopay_discount": 1.0,
+                "term_years": 10,
+                "grace_period": 9,
+                "grace_interest": true,
+                "extra_payment": 0.0,
+                "origination_fee": 0.0,
+                "link": "",
+                "notes": ""
+            }
+        },
+        {
+            "Source": "USGOV4",
+            "Loan Name": "25/26",
+            "Type": "Federal - PLUS",
+            "Balance": "$42,000.00",
+            "Rate": "8.00%",
+            "Monthly": "$540.98",
+            "Interest": "$22,917.43",
+            "Total Cost": "$64,917.43",
+            "Link": "",
+            "Raw Data": {
+                "source": "USGOV4",
+                "loan_name": "25/26",
+                "loan_type": "Federal - PLUS",
+                "balance": 42000.0,
+                "interest_rate": 9.0,
+                "autopay_discount": 1.0,
+                "term_years": 10,
+                "grace_period": 9,
+                "grace_interest": true,
+                "extra_payment": 0.0,
+                "origination_fee": 0.0,
+                "link": "",
+                "notes": ""
+            }
+        },
+        {
+            "Source": "ALLSTAFFORDLOANS",
+            "Loan Name": "22-26 stafford",
+            "Type": "Federal - Subsidized",
+            "Balance": "$27,960.00",
+            "Rate": "5.75%",
+            "Monthly": "$306.91",
+            "Interest": "$8,869.77",
+            "Total Cost": "$36,829.77",
+            "Link": "",
+            "Raw Data": {
+                "source": "ALLSTAFFORDLOANS",
+                "loan_name": "22-26 stafford",
+                "loan_type": "Federal - Subsidized",
+                "balance": 27960.0,
+                "interest_rate": 5.75,
+                "autopay_discount": 0.0,
+                "term_years": 10,
+                "grace_period": 6,
+                "grace_interest": false,
+                "extra_payment": 0.0,
+                "origination_fee": 0.0,
+                "link": "",
+                "notes": ""
+            }
         }
+    ],
+    "portfolio_settings": {
+        "extra_principal_payment": 0.0,
+        "rollover_paid_off_minimums": true
     }
-]
+}
